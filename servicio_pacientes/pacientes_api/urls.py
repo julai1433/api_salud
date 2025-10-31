@@ -16,11 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from pacientes.views import health
+from pacientes.views import health, PacientesRegistroSeguroView, PacientesPerfilSeguroView, PacientesInseguroPerfilView
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health),
     path('api-token-auth/', obtain_auth_token),
+    path('api/pacientes/seguro/registro', PacientesRegistroSeguroView.as_view()),
+    path('api/pacientes/seguro/perfil/<int:pk>', PacientesPerfilSeguroView.as_view()),
+    path('api/pacientes/inseguro/perfil/<int:pk>', PacientesInseguroPerfilView.as_view()),
 ]

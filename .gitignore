@@ -8,3 +8,5 @@ db.sqlite3
 *.sqlite3
 # OS
 .DS_Store
+servicio_expedientes/expedientes/migrations/*
+servicio_pacientes/pacientes/migrations/0001_initial.py
