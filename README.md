@@ -35,9 +35,9 @@ El proyecto incluye scripts Bash y una colección Postman para demostrar flujos 
 
 Con los servicios en marcha puedes lanzar cualquiera de los scripts:
 
-- `./demo_secure_flow.sh` – flujo completo sin vulnerabilidades.
-- `./demo_insecure_flow.sh` – reproduce los endpoints vulnerables.
-- `./demo_attack_flow.sh` – demuestra la explotación de SQL Injection y asignación masiva.
+- `./demo_shell_scripts/demo_secure_flow.sh` – flujo completo sin vulnerabilidades.
+- `./demo_shell_scripts/demo_insecure_flow.sh` – reproduce los endpoints vulnerables.
+- `./demo_shell_scripts/demo_attack_flow.sh` – demuestra la explotación de SQL Injection y asignación masiva.
 
 Cada script documenta su avance en consola.
 
@@ -55,4 +55,3 @@ El archivo `analisis_vulnerabilidades.md` reúne:
 - Peticiones Postman que las explotan.
 - Contraparte segura y motivos por los que evitan el ataque.
 - Conclusiones sobre las capas de abstracción y validación.
-

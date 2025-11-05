@@ -4,6 +4,13 @@
 # Ambos microservicios ahora son autocontenidos para su autenticación.
 
 # --- Configuración ---
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SERVICIO_PACIENTES_DIR="${ROOT_DIR}/servicio_pacientes"
+SERVICIO_EXPEDIENTES_DIR="${ROOT_DIR}/servicio_expedientes"
+
 PACIENTES_HOST=${PACIENTES_SERVICE_HOST:-127.0.0.1}
 PACIENTES_PORT=${PACIENTES_SERVICE_PORT:-8001}
 EXPEDIENTES_HOST=${EXPEDIENTES_SERVICE_HOST:-127.0.0.1}
@@ -22,7 +29,7 @@ function print_info { echo "INFO: $1"; }
 
 function kill_servers {
     if [ ${#STARTED_PIDS[@]} -gt 0 ]; then
-        kill "${STARTED_PIDS[@]}" &> /dev/null
+        kill "${STARTED_PIDS[@]}" 2>/dev/null || true
     fi
 }
 
@@ -73,8 +80,8 @@ trap kill_servers EXIT
 
 # --- Inicio del Script ---
 print_step "Iniciando servicios de Django"
-ensure_server "servicio_pacientes" "servicio_pacientes" "$PACIENTES_HOST" "$PACIENTES_PORT"
-ensure_server "servicio_expedientes" "servicio_expedientes" "$EXPEDIENTES_HOST" "$EXPEDIENTES_PORT"
+ensure_server "servicio_pacientes" "$SERVICIO_PACIENTES_DIR" "$PACIENTES_HOST" "$PACIENTES_PORT"
+ensure_server "servicio_expedientes" "$SERVICIO_EXPEDIENTES_DIR" "$EXPEDIENTES_HOST" "$EXPEDIENTES_PORT"
 
 # --- PREPARACIÓN: Crear datos de prueba ---
 print_title "PREPARACIÓN: Creando usuarios y registros de prueba vía API"
