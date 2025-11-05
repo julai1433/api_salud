@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'expedientes',
+    'expedientes.apps.ExpedientesConfig',
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'pacientes_db': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR.parent / 'servicio_pacientes' / 'db.sqlite3',
     }
 }
 
@@ -132,3 +137,14 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',  # MVP
     ],
 }
+
+# Custom User Model for this service
+AUTH_USER_MODEL = 'expedientes_core.Doctor'
+
+# Configuración para comunicación entre servicios
+PACIENTES_SERVICE_HOST = os.getenv('PACIENTES_SERVICE_HOST', '127.0.0.1')
+PACIENTES_SERVICE_PORT = os.getenv('PACIENTES_SERVICE_PORT', '8001')
+PACIENTES_SERVICE_URL = f"http://{PACIENTES_SERVICE_HOST}:{PACIENTES_SERVICE_PORT}"
+PACIENTES_API_URL = f"{PACIENTES_SERVICE_URL}/api"
+
+DATABASE_ROUTERS = ['expedientes.routers.ExpedientesRouter']

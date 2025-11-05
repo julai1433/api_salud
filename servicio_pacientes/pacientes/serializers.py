@@ -1,10 +1,29 @@
 from rest_framework import serializers
+from django.conf import settings
+import requests
+
 from pacientes.models import Paciente
 
 class PacienteRegistroSerializer(serializers.ModelSerializer):
     class Meta:
         model = Paciente
         fields = ["nombre", "fecha_nacimiento", "nss", "email", "password", "es_doctor"]
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Usa el manager del modelo para crear el usuario y hashear la contraseña
+        user = Paciente.objects.create_user(**validated_data)
+
+        payload = {"nss": user.nss, "id_paciente": user.id}
+        try:
+            url = f"{settings.EXPEDIENTES_API_URL}/expedientes/paciente-index/sync"
+            response = requests.post(url, json=payload, timeout=5)
+            if response.status_code >= 400:
+                print(f"Error sincronizando índice de paciente en expedientes: {response.status_code} - {response.text}")
+        except requests.RequestException as exc:
+            print(f"Error comunicándose con servicio_expedientes: {exc}")
+
+        return user
 
     def validate_nss(self, value):
         if Paciente.objects.filter(nss=value).exists():
@@ -20,16 +39,7 @@ class PacienteRegistroSerializer(serializers.ModelSerializer):
 class PacientePerfilUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Paciente
-        fields = ["nombre", "fecha_nacimiento", "email", "password"]  # nss es inmutable en este endpoint
-
-    def validate(self, attrs):
-        allowed = set(self.Meta.fields)
-        unexpected = set(self.initial_data.keys()) - allowed
-        if "es_doctor" in unexpected:
-            raise serializers.ValidationError({"es_doctor": "Campo no permitido"})
-        if "nss" in self.initial_data:
-            raise serializers.ValidationError({"nss": "NSS es inmutable"})
-        return attrs
+        fields = ["nombre", "fecha_nacimiento", "email"]
 
     def validate_email(self, value):
         qs = Paciente.objects.filter(email=value)

@@ -3,26 +3,26 @@ URL configuration for expedientes_api project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
 from django.urls import path
-from expedientes.views import health, ExpedientesBuscarSeguroView, ExpedientesCrearSeguroView, ExpedientesBuscarInseguroView
+from expedientes.views import (
+    health,
+    ExpedientesBuscarSeguroView,
+    ExpedientesCrearSeguroView,
+    ExpedientesBuscarInseguroView,
+    DoctorRegistroView,
+    PacienteIndexSyncView,
+)
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health),
     path('api-token-auth/', obtain_auth_token),
+    # Nueva ruta para registrar doctores
+    path('api/expedientes/doctor/registro', DoctorRegistroView.as_view()),
+    path('api/expedientes/paciente-index/sync', PacienteIndexSyncView.as_view()),
     path('api/expedientes/seguro/buscar', ExpedientesBuscarSeguroView.as_view()),
     path('api/expedientes/seguro/crear', ExpedientesCrearSeguroView.as_view()),
     path('api/expedientes/inseguro/buscar', ExpedientesBuscarInseguroView.as_view()),

@@ -1,0 +1,550 @@
+{
+  "info": {
+    "name": "Microservicios Salud",
+    "_postman_id": "f6c1c4cc-64be-4e54-9f11-collection-demo",
+    "description": "Colección de endpoints de los microservicios de pacientes y expedientes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('initialized')) {",
+          "  const unique = Date.now().toString().slice(-6);",
+          "  pm.collectionVariables.set('uniqueId', unique);",
+          "  if (!pm.collectionVariables.get('pacientes_base')) {",
+          "    pm.collectionVariables.set('pacientes_base', 'http://127.0.0.1:8001');",
+          "  }",
+          "  if (!pm.collectionVariables.get('expedientes_base')) {",
+          "    pm.collectionVariables.set('expedientes_base', 'http://127.0.0.1:8002');",
+          "  }",
+          "  pm.collectionVariables.set('doctor_email', 'doctor-' + unique + '@clinic.com');",
+          "  pm.collectionVariables.set('doctor_password', 'password123');",
+          "  pm.collectionVariables.set('doctor_token', '');",
+          "  pm.collectionVariables.set('doctor_id', '');",
+          "  pm.collectionVariables.set('paciente_a_email', 'paciente-a-' + unique + '@example.com');",
+          "  pm.collectionVariables.set('paciente_a_password', 'paciente123');",
+          "  pm.collectionVariables.set('paciente_a_nss', 'NSS-A-' + unique);",
+          "  pm.collectionVariables.set('paciente_a_id', '');",
+          "  pm.collectionVariables.set('paciente_a_token', '');",
+          "  pm.collectionVariables.set('paciente_b_email', 'paciente-b-' + unique + '@example.com');",
+          "  pm.collectionVariables.set('paciente_b_password', 'paciente123');",
+          "  pm.collectionVariables.set('paciente_b_nss', 'NSS-B-' + unique);",
+          "  pm.collectionVariables.set('paciente_b_id', '');",
+          "  pm.collectionVariables.set('insecure_query', \"' OR '1'='1\");",
+          "  pm.collectionVariables.set('initialized', 'true');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Servicios",
+      "item": [
+        {
+          "name": "Pacientes - Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{pacientes_base}}/health/",
+              "host": [
+                "{{pacientes_base}}"
+              ],
+              "path": [
+                "health",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Expedientes - Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{expedientes_base}}/health/",
+              "host": [
+                "{{expedientes_base}}"
+              ],
+              "path": [
+                "health",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Flujo Seguro",
+      "item": [
+        {
+          "name": "Registrar doctor (expedientes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Dr. Demo {{uniqueId}}\",\n  \"email\": \"{{doctor_email}}\",\n  \"password\": \"{{doctor_password}}\",\n  \"especialidad\": \"Cardiología\"\n}"
+            },
+            "url": {
+              "raw": "{{expedientes_base}}/api/expedientes/doctor/registro",
+              "host": [
+                "{{expedientes_base}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "doctor",
+                "registro"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Doctor creado', function () {",
+                  "  pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('doctor_id', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener token doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{doctor_email}}\",\n  \"password\": \"{{doctor_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{expedientes_base}}/api-token-auth/",
+              "host": [
+                "{{expedientes_base}}"
+              ],
+              "path": [
+                "api-token-auth",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = (pm.response.json() || {}).token || '';",
+                  "pm.collectionVariables.set('doctor_token', token);",
+                  "pm.test('Token de doctor recibido', function () {",
+                  "  pm.expect(token.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar paciente A (seguro)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Paciente A {{uniqueId}}\",\n  \"fecha_nacimiento\": \"1990-01-01\",\n  \"nss\": \"{{paciente_a_nss}}\",\n  \"email\": \"{{paciente_a_email}}\",\n  \"password\": \"{{paciente_a_password}}\",\n  \"es_doctor\": false\n}"
+            },
+            "url": {
+              "raw": "{{pacientes_base}}/api/pacientes/seguro/registro",
+              "host": [
+                "{{pacientes_base}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "seguro",
+                "registro"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Paciente A registrado', function () {",
+                  "  pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('paciente_a_id', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener token paciente A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{paciente_a_email}}\",\n  \"password\": \"{{paciente_a_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{pacientes_base}}/api-token-auth/",
+              "host": [
+                "{{pacientes_base}}"
+              ],
+              "path": [
+                "api-token-auth",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = (pm.response.json() || {}).token || '';",
+                  "pm.collectionVariables.set('paciente_a_token', token);",
+                  "pm.test('Token de paciente A recibido', function () {",
+                  "  pm.expect(token.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar perfil seguro paciente A",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{paciente_a_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Paciente A Seguro {{uniqueId}}\",\n  \"email\": \"{{paciente_a_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{pacientes_base}}/api/pacientes/seguro/perfil/{{paciente_a_id}}",
+              "host": [
+                "{{pacientes_base}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "seguro",
+                "perfil",
+                "{{paciente_a_id}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Perfil seguro actualizado', function () {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear nota médica (seguro)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paciente_nss\": \"{{paciente_a_nss}}\",\n  \"fecha_consulta\": \"2025-01-01T12:00:00Z\",\n  \"diagnostico\": \"Paciente con síntomas leves\",\n  \"tratamiento\": \"Reposo e hidratación\"\n}"
+            },
+            "url": {
+              "raw": "{{expedientes_base}}/api/expedientes/seguro/crear",
+              "host": [
+                "{{expedientes_base}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "seguro",
+                "crear"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Nota médica creada', function () {",
+                  "  pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data && data.id) {",
+                  "  pm.collectionVariables.set('nota_medica_id', data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar notas (seguro)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{expedientes_base}}/api/expedientes/seguro/buscar?nss={{paciente_a_nss}}",
+              "host": [
+                "{{expedientes_base}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "seguro",
+                "buscar"
+              ],
+              "query": [
+                {
+                  "key": "nss",
+                  "value": "{{paciente_a_nss}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.test('Notas devueltas', function () {",
+                  "  pm.expect(Array.isArray(data)).to.eql(true);",
+                  "  pm.expect(data.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flujo Ataque",
+      "item": [
+        {
+          "name": "Registrar paciente B (victima)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Paciente B {{uniqueId}}\",\n  \"fecha_nacimiento\": \"1992-02-02\",\n  \"nss\": \"{{paciente_b_nss}}\",\n  \"email\": \"{{paciente_b_email}}\",\n  \"password\": \"{{paciente_b_password}}\",\n  \"es_doctor\": false\n}"
+            },
+            "url": {
+              "raw": "{{pacientes_base}}/api/pacientes/seguro/registro",
+              "host": [
+                "{{pacientes_base}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "seguro",
+                "registro"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Paciente B registrado', function () {",
+                  "  pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('paciente_b_id', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignación masiva (inseguro)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"es_doctor\": true\n}"
+            },
+            "url": {
+              "raw": "{{pacientes_base}}/api/pacientes/inseguro/perfil/{{paciente_b_id}}",
+              "host": [
+                "{{pacientes_base}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "inseguro",
+                "perfil",
+                "{{paciente_b_id}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.test('Campo es_doctor cambiado', function () {",
+                  "  pm.expect(data.es_doctor).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inyección SQL (inseguro)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{expedientes_base}}/api/expedientes/inseguro/buscar?nss={{insecure_query}}",
+              "host": [
+                "{{expedientes_base}}"
+              ],
+              "path": [
+                "api",
+                "expedientes",
+                "inseguro",
+                "buscar"
+              ],
+              "query": [
+                {
+                  "key": "nss",
+                  "value": "{{insecure_query}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.test('Respuesta de inyección', function () {",
+                  "  pm.expect(Array.isArray(data)).to.eql(true);",
+                  "  pm.expect(data.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "pacientes_base",
+      "value": "http://127.0.0.1:8001"
+    },
+    {
+      "key": "expedientes_base",
+      "value": "http://127.0.0.1:8002"
+    }
+  ]
+}

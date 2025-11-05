@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -132,3 +133,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',  # MVP
     ],
 }
+
+# Custom User Model
+AUTH_USER_MODEL = 'pacientes.Paciente'
+
+# Configuración para comunicación con servicio de expedientes
+EXPEDIENTES_SERVICE_HOST = os.getenv('EXPEDIENTES_SERVICE_HOST', '127.0.0.1')
+EXPEDIENTES_SERVICE_PORT = os.getenv('EXPEDIENTES_SERVICE_PORT', '8002')
+EXPEDIENTES_SERVICE_URL = f"http://{EXPEDIENTES_SERVICE_HOST}:{EXPEDIENTES_SERVICE_PORT}"
+EXPEDIENTES_API_URL = f"{EXPEDIENTES_SERVICE_URL}/api"
