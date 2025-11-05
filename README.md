@@ -5,15 +5,15 @@ Repositorio con dos microservicios Django REST Framework que modelan un flujo m�
 - `servicio_pacientes`: registro, autenticación y mantenimiento de perfiles de pacientes.
 - `servicio_expedientes`: gestión de doctores y notas médicas sincronizadas con el servicio de pacientes.
 
-El proyecto incluye scripts Bash y una colección Postman para demostrar flujos seguros y ataques controlados (SQL Injection y Asignación Masiva) con fines académicos.
+El proyecto incluye scripts Bash y una colección Postman para demostrar flujos seguros y ataques controlados (SQL Injection y Asignación Masiva) con fines ilustrativos.
 
 ## Estructura relevante
 
 - `servicio_pacientes/` y `servicio_expedientes/`: proyectos Django independientes.
 - `start_services.sh`: arranca ambos servicios, reutilizando procesos en ejecución.
 - `demo_*_flow.sh`: scripts Bash que automatizan distintos escenarios (seguro, inseguro, ataque).
-- `Postman/`: colección y entorno listos para importar.
-- `../docs/analisis_vulnerabilidades.md`: informe con el análisis técnico de las vulnerabilidades demostradas.
+- `Postman/`: colección y entorno listos para importar y  ejecutar.
+- `analisis_vulnerabilidades.md`: informe con el análisis técnico de las vulnerabilidades demostradas.
 
 ## Requisitos previos
 
@@ -39,23 +39,20 @@ Con los servicios en marcha puedes lanzar cualquiera de los scripts:
 - `./demo_insecure_flow.sh` – reproduce los endpoints vulnerables.
 - `./demo_attack_flow.sh` – demuestra la explotación de SQL Injection y asignación masiva.
 
-Cada script documenta su avance en consola (y en `log_demo_attack.txt` para el de ataques).
+Cada script documenta su avance en consola.
 
 ## Colección Postman
 
 1. Importa `Postman/SaludMicroservicios.postman_collection.json`.
 2. Importa el entorno `Postman/MicroserviciosSaludLocal.postman_environment.json`.
-3. Selecciona el entorno y usa el Runner para ejecutar la colección completa. Los pre-request scripts generan correos, NSS y tokens automáticamente, replicando los mismos escenarios de los demos Bash.
+3. Selecciona el entorno y ejecuta (da click en 'Run') la colección completa. Los pre-request scripts generan correos, NSS y tokens automáticamente, replicando los mismos escenarios de los demos Bash.
 
 ## Documentación de vulnerabilidades
 
-El archivo `../docs/analisis_vulnerabilidades.md` reúne:
+El archivo `analisis_vulnerabilidades.md` reúne:
 
 - Código inseguro de ambos microservicios y explicación de las vulnerabilidades.
 - Peticiones Postman que las explotan.
 - Contraparte segura y motivos por los que evitan el ataque.
 - Conclusiones sobre las capas de abstracción y validación.
 
-## Licencia
-
-Proyecto con fines educativos. Ajusta y reutiliza el contenido según tus necesidades.
